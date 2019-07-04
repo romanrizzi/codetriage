@@ -1,0 +1,9 @@
+section.user-favorite-langs.content-section
+    h2.content-section-title Select your favorite languages:
+    = form_for user do |f|
+      ul.all-languages-list
+        - Repo.all_languages.each do |language|
+          li.language-item
+            = f.check_box :favorite_languages, { multiple: true }, language, nil
+            = f.label language, for: "user_favorite_languages_#{language.downcase}"
+      p= button_tag "Save Favorite Languages", class: "button full-width-action"

@@ -163,17 +163,15 @@ class User < ActiveRecord::Base
 
   def days_since_last_clicked
     return 0 if last_clicked_at.blank?
-    (
-      (Time.now - last_clicked_at) / 1.day
-    ).ceil # only want whole days
+
+    days_since(last_clicked_at)
   end
 
   def days_since_last_email
     last_sent_at = repo_subscriptions.where("last_sent_at is not null").order(:last_sent_at).first.try(:last_sent_at)
     last_sent_at ||= self.created_at
-    (
-      (Time.now - last_sent_at) / 1.day
-    ).ceil # only want whole days
+
+    days_since(last_sent_at)
   end
 
   def favorite_language?(language)
@@ -192,9 +190,18 @@ class User < ActiveRecord::Base
     issue_assignments.where(delivered: false).limit(daily_issue_limit)
   end
 
+  def should_select_languages?
+    days_since(created_at) <= 2 && favorite_languages.blank?
+  end
+
   private
 
   def issue_assigner
     @issue_assigner ||= IssueAssigner.new(self, repo_subscriptions)
+  end
+
+  def days_since(event)
+    return 0 if event.nil?
+    ((Time.now - event) / 1.day).ceil # only want whole days
   end
 end

@@ -10,7 +10,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
                          I18n.t "devise.omniauth_callbacks.bad_email_success", kind: "GitHub"
                        end
 
-      sign_in_and_redirect @user, event: :authentication
+      redirect_authenticated_user(@user)
     else
       session["devise.github_data"] = request.env["omniauth.auth"].delete("extra")
       flash[:error]  = no_email_error if request.env["omniauth.auth"].info.email.blank?
@@ -21,6 +21,15 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   end
 
   private
+
+  def redirect_authenticated_user(authenticated_user)
+    if authenticated_user.should_select_languages?
+      sign_in authenticated_user
+      redirect_to user_languages_path(authenticated_user), event: :authentication
+    else
+      sign_in_and_redirect authenticated_user, event: :authentication
+    end
+  end
 
   def no_email_error
     msg =  "You need a public email address on GitHub to sign up you can add"

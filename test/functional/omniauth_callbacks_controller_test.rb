@@ -15,6 +15,8 @@ class Users::OmniauthCallbacksControllerTest < ActionController::TestCase
     get :github
     assert flash[:notice] == I18n.t("devise.omniauth_callbacks.success",
                                     kind: "GitHub")
+
+    assert_redirected_to root_path
   end
 
   test "redirect to user page and inform when bad e-mail address" do
@@ -25,10 +27,25 @@ class Users::OmniauthCallbacksControllerTest < ActionController::TestCase
     assert_redirected_to root_path
   end
 
-  def stub_oauth_user(email)
-    user = User.new(email: email)
-    user.stubs(:persisted?).returns(true)
-    GitHubAuthenticator.stubs(:authenticate).returns(user)
-    user
+  test "redirect to languages page after authenticating a new user" do
+    user = stub_oauth_user('legit@legit.com', new_user: true)
+    get :github
+
+    assert_redirected_to user_languages_path(user_id: user.id)
+  end
+
+  def stub_oauth_user(email, new_user: false)
+    User.new(email: email, id: -1).tap do |user|
+      if new_user
+        user.created_at = 5.minutes.ago
+        user.favorite_languages = []
+      else
+        user.created_at = 6.days.ago
+        user.favorite_languages = ['ruby']
+      end
+
+      user.stubs(:persisted?).returns(true)
+      GitHubAuthenticator.stubs(:authenticate).returns(user)
+    end
   end
 end
