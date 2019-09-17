@@ -49,6 +49,10 @@ class UsersController < ApplicationController
     redirect_to root_url, notice: "Successfully removed your user account"
   end
 
+  def languages
+    @user = current_user
+  end
+
   private
 
   def user_params

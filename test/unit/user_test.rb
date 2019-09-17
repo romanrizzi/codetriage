@@ -108,6 +108,27 @@ class UserTest < ActiveSupport::TestCase
     assert_not u.has_favorite_languages?
   end
 
+  test "user created less than 2 days ago should select favorite languages" do
+    created_at = 1.hour.ago
+    u = User.new(favorite_languages: [], created_at: created_at)
+
+    assert u.should_select_languages?
+  end
+
+  test "user created more than 2 days ago shouldn't select favorite languages" do
+    created_at = 3.days.ago
+    u = User.new(favorite_languages: [], created_at: created_at)
+
+    assert_not u.should_select_languages?
+  end
+
+  test "user created less than 2 days ago who already select languages shouldn't have to select again" do
+    created_at = 1.days.ago
+    u = User.new(favorite_languages: ['ruby'], created_at: created_at)
+
+    assert_not u.should_select_languages?
+  end
+
   test "account_delete_token should be created on first use" do
     u = User.new
     assert_nil u[:account_delete_token]

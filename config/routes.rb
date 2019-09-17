@@ -32,7 +32,10 @@ CodeTriage::Application.routes.draw do
     resources :after_signup, only: [:show, :update]
   end
 
-  resources   :users, only: [:show, :edit, :update, :destroy]
+  resources :users, only: [:show, :edit, :update, :destroy] do
+    get :languages
+  end
+
   get         "/users/unsubscribe/:account_delete_token" => "users#token_delete", as: :token_delete_user
   delete      "/users/unsubscribe/:account_delete_token" => "users#token_destroy"
 
